@@ -9,6 +9,6 @@ include ../common.mk
 
 test: merge-sort
 
-merge-sort:
+merge-sort: merge-sort.c
 	$(VECHO) "  CC\$@.c\n"
 	$(Q)$(CC) -o $@ $(CFLAGS) $@.c
