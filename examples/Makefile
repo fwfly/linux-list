@@ -1,5 +1,6 @@
 CFLAGS = -I ../include -I ../private
 CFLAGS += -std=c99 -pedantic -Wall -W -Werror
+CFLAGS += -g # gdb
 
 .PHONY: all
 all: test
