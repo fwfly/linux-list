@@ -5,11 +5,10 @@
 #include "list.h"
 
 // origin is 256
-static uint16_t values[10];
+static uint16_t values[256];
 
 void print_list(struct list_head *head)
 {
-    printf("print_list\n");
     struct listitem *item;
     list_for_each_entry (item, head, list) {
         printf("%d ", item->i);
@@ -29,38 +28,53 @@ void devide_list(struct list_head *head,
         cur = next;
         next = next->next;
     }
-    /*struct listitem *item;
-    item = list_entry(cur, struct listitem, list);
-    printf("devide %d \n", item->i);*/
     list_splice_tail(head, right_h);
+}
+
+
+int sort_sigle_item(struct listitem *item_l,
+                    struct list_head *head,
+                    struct list_head *list_r)
+{
+    struct listitem *item_r, *is = NULL;
+
+    list_for_each_entry_safe (item_r, is, list_r, list) {
+        if (item_l->i > item_r->i) {
+            list_del(&item_r->list);
+            // printf("%d, ", item_r->i);
+            list_move_tail(&item_r->list, head);
+            // printf("right: ");
+            // print_list(list_r);
+        } else {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void sort_left_right(struct list_head *head,
                      struct list_head *list_l,
                      struct list_head *list_r)
 {
-    struct listitem *item_l, *item_r, *is = NULL;
+    struct listitem *item_l, *is = NULL;
 
     list_for_each_entry_safe (item_l, is, list_l, list) {
-        if (list_empty(list_l)) {
-            list_splice_tail(list_r, head);
-            break;
-        }
-        if (list_empty(list_r)) {
-            list_splice_tail(list_l, head);
-            break;
-        }
-        list_for_each_entry_safe (item_r, is, list_r, list) {
-            if (item_l->i > item_r->i) {
-                list_del(&item_r->list);
-                list_move_tail(&item_r->list, head);
-            } else {
-                list_del(&item_l->list);
-                list_move_tail(&item_l->list, head);
-                break;
-            }
+        if (sort_sigle_item(item_l, head, list_r)) {
+            list_del(&item_l->list);
+            // printf("%d, ", item_l->i);
+            list_move_tail(&item_l->list, head);
+            // printf("left: ");
+            // print_list(list_l);
         }
     }
+
+    if (list_empty(list_l)) {
+        list_splice_tail(list_r, head);
+    }
+    if (list_empty(list_r)) {
+        list_splice_tail(list_l, head);
+    }
+    printf("\n");
     print_list(head);
 }
 
@@ -78,13 +92,14 @@ void merge_sort(struct list_head *head, uint16_t n)
     // split into 2
     n = n / 2;
     devide_list(head, &list_l, &list_r, n);
-    print_list(&list_l);
-    printf("finish left\n");
-    print_list(&list_r);
-    printf("finish right\n");
     merge_sort(&list_l, n);
     merge_sort(&list_r, n);
     INIT_LIST_HEAD(head);
+    printf("Ready to sort: \n");
+    printf("left: ");
+    print_list(&list_l);
+    printf("right: ");
+    print_list(&list_r);
     sort_left_right(head, &list_l, &list_r);
 }
 
